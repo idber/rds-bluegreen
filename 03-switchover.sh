@@ -29,13 +29,13 @@ cd "$(dirname "$0")"
 parse_apply_flag "$@"
 
 INST="${1:-}"
-[ -n "${INST}" ] || die "用法: $0 <instance-id> [--apply] [--timeout 300] [--force] [--skip-restart-old] [--reboot-delay 60]"
+[ -n "${INST}" ] || die "用法: $0 <instance-id> [--apply] [--timeout 300] [--force] [--skip-restart-old] [--reboot-delay 30]"
 
-TIMEOUT=300; FORCE=false; RESTART_OLD=true; REBOOT_DELAY=60
+TIMEOUT=300; FORCE=false; RESTART_OLD=true; REBOOT_DELAY=30
 while [ $# -gt 0 ]; do
   case "$1" in
     --timeout)          TIMEOUT="${2:-300}"; shift 2 ;;
-    --reboot-delay)     REBOOT_DELAY="${2:-60}"; shift 2 ;;
+    --reboot-delay)     REBOOT_DELAY="${2:-30}"; shift 2 ;;
     --force)            FORCE=true; shift ;;
     --skip-restart-old) RESTART_OLD=false; shift ;;
     *) shift ;;
