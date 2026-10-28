@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 蓝绿升级 —— 执行切换
 #
-# 用法: ./03-switchover.sh <instance-id> [--apply] [--timeout 300] [--force] [--skip-restart-old] [--reboot-delay 60]
+# 用法: ./03-switchover.sh <instance-id> [--apply] [--timeout 300] [--force] [--skip-restart-old] [--reboot-delay 30]
 #
 # 这个脚本刻意做得「哑」：先调 02-gate.sh，闸门不过就退出；过了就一条命令切换。
 # 不做任何判断、不做任何重试、不在循环里等人决策。
