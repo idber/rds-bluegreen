@@ -24,9 +24,6 @@ TARGET=8.4.11
 ./01-prepare.sh $INST $TARGET
 ./01-prepare.sh $INST $TARGET --apply
 
-# ② 轮询闸门，等到 GO（可能数小时，对业务零影响）
-watch -n 60 "./02-gate.sh $INST"
-
 # ③ 挑业务低谷切换（闸门不过会直接拒绝）
 ./03-switchover.sh $INST
 ./03-switchover.sh $INST --apply --timeout 300
@@ -73,38 +70,12 @@ grep -l '结论：NO-GO' logs/01-prepare-*.log   # 哪些预检没过
 日志里不会有颜色乱码 —— `_common.sh` 的 `[ -t 1 ] ||` 在非终端时自动关掉了 ANSI 码。
 
 ### 批量跑 `02-gate.sh`
-
-02 只读、可反复轮询，同样直接并发跑。每个实例一份日志 `logs/02-gate-<实例>.log`，
-和 01 的 `logs/01-prepare-<实例>.log` 前缀不同，不会互相覆盖；重跑覆盖上一轮同名日志即可
-—— 02 看的就是「现在能不能切」，只留最新一轮。
-
-```bash
-export AWS_DEFAULT_REGION=us-west-2
-mkdir -p logs
-
-for i in db-a db-b db-c; do
-  nohup ./02-gate.sh "$i" > "logs/02-gate-$i.log" 2>&1 &
-  disown
-done
-```
-
-判定只看日志里有没有 `下一步：./03-switchover.sh` —— 这行只在闸门全过时才打印。
-不要 grep `结论：`：02 在 `die` 路径（例如状态文件里没有 BG_ID）会直接退出，
-日志里只有 `ERROR` 一行，根本到不了打印结论的地方。
-
-```bash
-grep -l '下一步：./03-switchover.sh' logs/02-gate-*.log   # 哪些过了
-grep -L '下一步：./03-switchover.sh' logs/02-gate-*.log   # 哪些没过
-grep -nE 'BLOCK|ERROR' logs/02-gate-db-a.log              # 某个实例卡在哪一项
-```
-
-`disown` 之后拿不到作业状态，所以 grep 前确认日志都写完了（每个实例几十秒）：
-日志末尾有 `结论：` 或 `ERROR` 就是跑完了。
+ 02不需要，移除，在控制台查看主从延迟
 
 ### 批量跑 `03-switchover.sh`（**仅限测试环境**）
 
 测试集群多的时候逐个切太慢，而测试环境没有业务流量，并发切换的代价不存在。
-03 不交互、不读 stdin，所以和 01 / 02 一样直接并发跑：
+03 不交互、不读 stdin，所以和 01  一样直接并发跑：
 
 ```bash
 export AWS_DEFAULT_REGION=us-west-2
