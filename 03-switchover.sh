@@ -15,7 +15,7 @@
 # 不会回到新实例，是静默的数据分叉。重启旧实例会强制断开这些残留连接，
 # 迫使应用重新解析 DNS 并连到新实例。旧实例重启后仍然可用，回滚资产不受影响。
 #
-# 为什么切换后要等一会儿再重启（--reboot-delay 控制，默认 30s）：
+# 为什么切换后要等一会儿再重启（--reboot-delay 控制，默认 10s）：
 # 切换刚完成时下发重启，只会断开当下的连接；DNS 缓存还没过期的客户端会立刻连回旧实例，
 # 数据分叉的窗口没关掉。等一分钟，让 DNS TTL（建议 ≤5s）充分过期、残留客户端完成重连尝试，
 # 再重启一次，被掐断的连接重新解析就会落到新实例 —— 一次重启即可。
@@ -29,13 +29,13 @@ cd "$(dirname "$0")"
 parse_apply_flag "$@"
 
 INST="${1:-}"
-[ -n "${INST}" ] || die "用法: $0 <instance-id> [--apply] [--timeout 300] [--force] [--skip-restart-old] [--reboot-delay 30]"
+[ -n "${INST}" ] || die "用法: $0 <instance-id> [--apply] [--timeout 300] [--force] [--skip-restart-old] [--reboot-delay 10]"
 
-TIMEOUT=300; FORCE=false; RESTART_OLD=true; REBOOT_DELAY=30
+TIMEOUT=300; FORCE=false; RESTART_OLD=true; REBOOT_DELAY=10
 while [ $# -gt 0 ]; do
   case "$1" in
     --timeout)          TIMEOUT="${2:-300}"; shift 2 ;;
-    --reboot-delay)     REBOOT_DELAY="${2:-30}"; shift 2 ;;
+    --reboot-delay)     REBOOT_DELAY="${2:-10}"; shift 2 ;;
     --force)            FORCE=true; shift ;;
     --skip-restart-old) RESTART_OLD=false; shift ;;
     *) shift ;;
